@@ -22,6 +22,7 @@ Without extra parameter, your proxy will resolve using Google's own DoH server. 
 * `cloudflare` [Cloudflare](https://blog.cloudflare.com/introducing-1-1-1-1-for-families/)'s malware filter variant.
 * `cleanbrowsing` [CleanBrowsing](https://cleanbrowsing.org/)'s Family Filter variant. Aside from blocking phising and malware sites, it also blocks adult sites, vpn, proxies, and mixed sites like Reddit.
 * `nextdns` [NextDNS](http://nextdns.io/) infinitely customizable filter. On its own you get the non-filtering variant, add your configuration id after slash, eg : `nextdns/abcde`, for device identifier, just add another slash and your device name, eg : `nextdns/abcde/phone`.
+* `spread` randomly pick from Google, Cloudflare, Quad9 and Adguard for each request. I use non-filtering variants because if a site isn't universally blocked it might be hard to pinpoint the problem, but you're free to edit the list on your own, only limitation is all domain must serve from `/dns-query`. Adguard have a good starting [list of various providers](https://kb.adguard.com/en/general/dns-providers).
 
 ### Custom servers
 
