@@ -47,6 +47,18 @@ Any resolvers that support Do53 can be used by their IP, eg. to use Google's 8.8
 
 Any resolvers that support DoH can be used by their complete domain and query path, eg to use Google's DoH variant, use `https://region-projectname.cloudfunctions.net/functionname/dns.google/dns-query`. The X-Forwarded-For header is set with your device's IP, so ECS should work correctly through this mode. If you're using NextDNS, eg `https://region-projectname.cloudfunctions.net/functionname/dns.nextdns.io/abc123`, notice the log should show your original IP and the local resolving works accordingly. You can disable the header from the source code from a marked comment inside `sendDoH()`.
 
+### Random Mode
+
+There are four group of resolvers that you can pick to resolve queries. Each query would be resolved by different member, reducing the amount of data each resolver have of your activity. Use the group name as short code.
+
+* `unrestricted` : The unrestricted, non-filtering variants of Adguard, Quad9 and Cloudflare.
+
+* `ecs` : The ECS variants of Google, OpenDNS and Quad9. Note the address used is Google Cloud's. If you really need ECS with DoH from randomized resolver, you can adapt the code to call DoH instead of Do53.
+
+* `malware` : Anti malware variants of AdGuard, CleanBrowsing, Cloudflare and Quad9.
+
+* `family` : Family friendly variants of AdGuard, CleanBrowsing, Cloudflare, and OpenDNS.
+
 ## Pros :
 
 * Free for even heavy usages. With free 2 million calls and 5 GB egress traffic a month, this should be enough to serve even an entire household (for comparison, the free tier for NextDNS provides 300 thousand request a month).
