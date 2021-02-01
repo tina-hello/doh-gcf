@@ -1,6 +1,8 @@
 # DNS over HTTPS proxy on Google Cloud Function
 A DNS over HTTPS (DoH) resolver can be accessed entirely through a simple URL. If your ISP/organization blocks popular DoH provider, you don't trust random DoH proxy and can't be bothered to setup your own server, you can use this script to have your own DoH proxy on Google Cloud Function (GCF).
 
+If you find the following too complex when all you need is simple resolver to target one server or need a straightforward example to implement DoH, see the [simpleDo53](https://github.com/tina-hello/doh-gcf/tree/simpleDo53) and [simpleDoH](https://github.com/tina-hello/doh-gcf/tree/simpleDoH) branch, or their original inspiration [NotMikeDEV/DoH](https://github.com/NotMikeDEV/DoH)
+
 ## Usage Steps
 
 * Get to https://console.cloud.google.com/functions and create a new function. 
