@@ -1,77 +1,100 @@
 using Google.Cloud.Functions.Framework;
 using Microsoft.AspNetCore.Http;
-using System.Net.Http;
-using System.Threading.Tasks;
-using System;
-using System.Linq;
-using System.Net.Sockets;
-using System.IO;
-using System.Net;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Logging;
 using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Net.Http;
+using System.Net.Sockets;
+using System.Net;
+using System.Threading.Tasks;
+using System;
 
 namespace SimpleHttpFunction
 {
     public class Function : IHttpFunction
     {
         private readonly ILogger _logger;
-
+        
         public Function(ILogger<Function> logger) =>
             _logger = logger;
         public async Task HandleAsync(HttpContext context)
         {
             try
-            {
-
+            {   
                 var datagram = extractDatagram(context);
 
                 var option = extractOption(context);
 
                 context.Response.ContentType = "application/dns-message";
+                var do53Address = pickDo53(option);
 
-                IPAddress do53Address;
-                do53Address = pickDo53(option);
-                
-                if (do53Address != null)
+                if (datagram.Result == null)
                 {
-                    if (datagram.Result == null)
-                    {
-                        context.Response.StatusCode = 400;
-                        return;
-                    }
-                    await sendDo53(context, datagram.Result, do53Address);
+                    context.Response.StatusCode = 400;
                     return;
                 }
 
-                var dnsPath = "";
-                var dnsHost = "";
-
-                var thirdSlashIndex = option.IndexOf("/");
-                if (thirdSlashIndex > 0)
-                {
-                    dnsHost = option.Substring(0, thirdSlashIndex);
-                    dnsPath = option.Substring(thirdSlashIndex + 1);
+                if (do53Address != null)
+                {  
+                    await sendDo53(context, datagram.Result, do53Address);
+                    return;
                 }
-                else
-                {
-                    dnsHost = option;
-                    dnsPath = "";
-                }
+               
+                var (dnsHost,dnsPath) = extractUrlDoH(option);
 
-
-                await sendDoH(context, datagram.Result, dnsPath, dnsHost);
-                return;
+                await sendDoH(context, datagram.Result, dnsHost, dnsPath);
+                
             }
             catch (Exception ex)
             {
-
                 _logger.LogError(ex, ex.Message + Environment.NewLine + ex.StackTrace);
             }
 
         }
 
-        private async static Task sendDoH(HttpContext context, byte[] datagram, string dnsPath, string dnsHost)
+        private static (string dnsHost,string dnsPath) extractUrlDoH(string option)
+        {
+            
+            if (dohProviders.ContainsKey(option))
+            {
+                option = dohProviders[option];
+            }
+            else if (option.StartsWith("nextdns"))
+            {
+                option = option.Replace("nextdns", "dns.nextdns.io");
+            }
+            else switch (option)
+            {
+                    case "doh-unrestricted":
+                        option = dohProviders["doh-"+unrestricted[rand.Next(unrestricted.Length)]];
+                        break;
+                    case "doh-malware":
+                        option = dohProviders["doh-"+antiMalware[rand.Next(antiMalware.Length)]];
+                        break;
+                    case "doh-family":
+                        option = dohProviders["doh-"+family[rand.Next(family.Length)]];
+                        break;
+            }
+            var slashIndex = option.IndexOf("/");
+            string dnsHost, dnsPath;
+            if (slashIndex > 0)
+            {
+                dnsHost = option.Substring(0, slashIndex);
+                dnsPath = option[(slashIndex + 1)..];
+            }
+            else
+            {
+                dnsHost = option; 
+                dnsPath= ""; //if you set this to "dns-query", 
+                             //you don't need to specify the path for most DoH but break providers like commons.host
+            }
+           
+            return (dnsHost, dnsPath);
+        }
+
+        private static async Task sendDoH(HttpContext context, byte[] datagram, string dnsHost, string dnsPath)
         {
             var request = new HttpRequestMessage();
             request.Content = new ByteArrayContent(datagram);
@@ -104,7 +127,7 @@ namespace SimpleHttpFunction
             await context.Response.Body.WriteAsync(result, 0, result.Length);
         }
 
-        private static Dictionary<string, IPAddress> do53Providers = new Dictionary<string, IPAddress> ()
+        private static readonly Dictionary<string, IPAddress> do53Providers = new Dictionary<string, IPAddress> ()
         {
             ["google"]                  = IPAddress.Parse("8.8.8.8"),
             ["google6"]                 = IPAddress.Parse("2001:4860:4860::8888"),
@@ -124,11 +147,30 @@ namespace SimpleHttpFunction
             ["quad9-ecs"]               = IPAddress.Parse("9.9.9.11"),
         };
 
-        static string[] unrestricted = new[] { "adguard-unrestricted", "cloudflare", "quad9-unrestricted" };
-        static string[] ecsProviders = new[] { "google", "opendns", "quad9-ecs" };
-        static string[] antiMalware = new[] { "adguard", "cleanbrowsing-security", "cloudflare-malware", "quad9" };
-        static string[] family = new[] { "adguard-family", "cleanbrowsing-family", "cloudflare-adult", "opendns-family" };
+        private static readonly string[] unrestricted = new[] { "adguard-unrestricted", "cloudflare", "quad9-unrestricted", "google" };
+        private static readonly string[] antiMalware  = new[] { "adguard", "cleanbrowsing-security", "cloudflare-malware", "quad9" };
+        private static readonly string[] family       = new[] { "adguard-family", "cleanbrowsing-family", "cloudflare-adult", "opendns-family" };
 
+        private static readonly Dictionary<string, string> dohProviders = new Dictionary<string, string>()
+        {
+            ["doh-google"]                  = "dns.google/dns-query",
+            ["doh-adguard"]                 = "dns.adguard.com/dns-query",
+            ["doh-adguard-family"]          = "dns-family.adguard.com/dns-query",
+            ["doh-adguard-unrestricted"]    = "dns-unfiltered.adguard.com/dns-query",
+            ["doh-cleanbrowsing-family"]    = "doh.cleanbrowsing.org/doh/family-filter/",
+            ["doh-cleanbrowsing-adult"]     = "doh.cleanbrowsing.org/doh/adult-filter/",
+            ["doh-cleanbrowsing-security"]  = "doh.cleanbrowsing.org/doh/security-filter/",
+            ["doh-cloudflare"]              = "dns.cloudflare.com/dns-query",
+            ["doh-cloudflare-malware"]      = "security.cloudflare-dns.com/dns-query",
+            ["doh-cloudflare-adult"]        = "family.cloudflare-dns.com/dns-query",
+            ["doh-opendns"]                 = "doh.opendns.com/dns-query",
+            ["doh-opendns-family"]          = "doh.familyshield.opendns.com/dns-query",
+            ["doh-quad9"]                   = "dns.quad9.net/dns-query",
+            ["doh-quad9-unrestricted"]      = "dns10.quad9.net/dns-query",
+            ["doh-quad9-ecs"]               = "dns11.quad9.net/dns-query",
+        };
+
+        private static readonly Random rand = new Random();
         private static IPAddress pickDo53(string option)
         {
             if (!option.Any())
@@ -142,9 +184,9 @@ namespace SimpleHttpFunction
                 return do53Address;
             }
 
-            if (option.StartsWith("nextdns"))
+            if (option.StartsWith("nextdns-"))
             {
-                var configID = option.Replace("nextdns", "");
+                var configID = option.Replace("nextdns-", "");
                 return IPAddress.Parse($"2a07:a8c0::{configID[..^4]}:{configID[^4..]}");
             }
 
@@ -152,16 +194,11 @@ namespace SimpleHttpFunction
             {
                 return do53Providers[option];
             }
-
             
-
-            var rand = new Random();
             switch (option)
             {
                 case "unrestricted":
                     return do53Providers[unrestricted[rand.Next(unrestricted.Length)]];
-                case "ecs":
-                    return do53Providers[ecsProviders[rand.Next(ecsProviders.Length)]];
                 case "malware":
                     return do53Providers[antiMalware[rand.Next(antiMalware.Length)]];
                 case "family":
@@ -169,8 +206,6 @@ namespace SimpleHttpFunction
                 default:
                     return null;
             }
-
-            
         }
 
         private static string extractOption(HttpContext context)
