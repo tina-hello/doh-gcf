@@ -20,7 +20,7 @@ Without extra parameter, your proxy will resolve using Google's own 8.8.8.8. You
 
 ### Short names
 
-Used on its own, the short names will forward your query unencrypted through Do53. You can add `doh-` prefix, eg, `doh-google` (except `google6`) to forward with encryption through DoH instead.
+Used on its own, the short names will forward your query unencrypted through Do53. You can add `doh-` prefix, eg, `doh-google` (except `google6`, since the DoH always use IPv6 when available) to forward with encryption through DoH instead.
 
 * `google` [Google](https://developers.google.com/speed/public-dns) public DNS. Fastest since the proxy already running inside Google's network
 * `google6` IPv6 variant of the Google DNS. I put it mostly to hint how to use your own IPv6 address by editing the source code.
