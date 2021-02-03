@@ -87,8 +87,8 @@ namespace SimpleHttpFunction
             else
             {
                 dnsHost = option; 
-                dnsPath= ""; //if you set this to "dns-query", 
-                             //you don't need to specify the path for most DoH but break providers like commons.host
+                dnsPath= "dns-query";
+                             
             }
            
             return (dnsHost, dnsPath);
@@ -153,21 +153,21 @@ namespace SimpleHttpFunction
 
         private static readonly Dictionary<string, string> dohProviders = new Dictionary<string, string>()
         {
-            ["doh-google"]                  = "dns.google/dns-query",
-            ["doh-adguard"]                 = "dns.adguard.com/dns-query",
-            ["doh-adguard-family"]          = "dns-family.adguard.com/dns-query",
-            ["doh-adguard-unrestricted"]    = "dns-unfiltered.adguard.com/dns-query",
+            ["doh-google"]                  = "dns.google",
+            ["doh-adguard"]                 = "dns.adguard.com",
+            ["doh-adguard-family"]          = "dns-family.adguard.com",
+            ["doh-adguard-unrestricted"]    = "dns-unfiltered.adguard.com",
             ["doh-cleanbrowsing-family"]    = "doh.cleanbrowsing.org/doh/family-filter/",
             ["doh-cleanbrowsing-adult"]     = "doh.cleanbrowsing.org/doh/adult-filter/",
             ["doh-cleanbrowsing-security"]  = "doh.cleanbrowsing.org/doh/security-filter/",
-            ["doh-cloudflare"]              = "dns.cloudflare.com/dns-query",
-            ["doh-cloudflare-malware"]      = "security.cloudflare-dns.com/dns-query",
-            ["doh-cloudflare-adult"]        = "family.cloudflare-dns.com/dns-query",
-            ["doh-opendns"]                 = "doh.opendns.com/dns-query",
-            ["doh-opendns-family"]          = "doh.familyshield.opendns.com/dns-query",
-            ["doh-quad9"]                   = "dns.quad9.net/dns-query",
-            ["doh-quad9-unrestricted"]      = "dns10.quad9.net/dns-query",
-            ["doh-quad9-ecs"]               = "dns11.quad9.net/dns-query",
+            ["doh-cloudflare"]              = "dns.cloudflare.com",
+            ["doh-cloudflare-malware"]      = "security.cloudflare-dns.com",
+            ["doh-cloudflare-adult"]        = "family.cloudflare-dns.com",
+            ["doh-opendns"]                 = "doh.opendns.com",
+            ["doh-opendns-family"]          = "doh.familyshield.opendns.com",
+            ["doh-quad9"]                   = "dns.quad9.net",
+            ["doh-quad9-unrestricted"]      = "dns10.quad9.net",
+            ["doh-quad9-ecs"]               = "dns11.quad9.net",
         };
 
         private static readonly Random rand = new Random();
