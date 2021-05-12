@@ -47,9 +47,9 @@ Use `nextdns-` for Do53 mode or `nextdns/` for DoH mode, followed with your conf
 
 ### Custom Do53 and DoH servers
 
-Any resolvers that support Do53 can be used by their IP, eg. to use Google's 8.8.8.8, use `https://region-projectname.cloudfunctions.net/functionname/8.8.8.8`, IPv6 is also supported (even if your own connection is IPv4 only, Google Cloud can use them), so for Google's IPv6 variant, use `https://region-projectname.cloudfunctions.net/functionname/2001:4860:4860::8888`
+Any resolvers that [support Do53](https://kb.adguard.com/en/general/dns-providers) can be used by their IP, eg. to use Google's 8.8.8.8, use `https://region-projectname.cloudfunctions.net/functionname/8.8.8.8`, IPv6 is also supported (even if your own connection is IPv4 only, Google Cloud can use them), so for Google's IPv6 variant, use `https://region-projectname.cloudfunctions.net/functionname/2001:4860:4860::8888`
 
-Any resolvers that support DoH can be used by their complete domain and query path, eg to use Google's DoH variant, use `https://region-projectname.cloudfunctions.net/functionname/dns.google/dns-query`. The `/dns-query` part can be skipped, so just the domain is enough for resolvers that use the standard path.
+Any resolvers that [support DoH](https://github.com/curl/curl/wiki/DNS-over-HTTPS) can be used by their complete domain and query path, eg to use Google's DoH variant, use `https://region-projectname.cloudfunctions.net/functionname/dns.google/dns-query`. The `/dns-query` part can be skipped, so just the domain is enough for resolvers that use the standard path.
 
 The X-Forwarded-For header is set with your device's IP on DoH request, so ECS *might* work with the device's IP, but so far it's only confirmed on NextDNS, while all other ECS-capable resolver doesn't seem to care, or in OpenDNS case, return an entirely different answer. You can disable the header from the source code from a marked comment inside `sendDoH()`.
 
