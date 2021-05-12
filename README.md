@@ -3,6 +3,8 @@ A DNS over HTTPS (DoH) resolver can be accessed entirely through a simple URL. I
 
 If you find the following too complex when all you need is simple resolver to target one server or need a straightforward example to implement DoH, see the [simpleDo53](https://github.com/tina-hello/doh-gcf/tree/simpleDo53) and [simpleDoH](https://github.com/tina-hello/doh-gcf/tree/simpleDoH) branch, or their original inspiration [NotMikeDEV/DoH](https://github.com/NotMikeDEV/DoH)
 
+Don't have a card to activate Google Cloud account or just don't want to use Google? I have a very [simplistic port](https://github.com/tina-hello/doh-cf-workers) for Cloudflare, no card needed.
+
 ## Usage Steps
 
 * Get to https://console.cloud.google.com/functions and create a new function. 
